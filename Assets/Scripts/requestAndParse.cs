@@ -7,19 +7,30 @@ using SimpleJSON;
 
 using UnityEditor;
 using UnityEngine.Events;
-public class requestAndParse: MonoBehaviour{
-string resutado ="";
-public ContenedorPersonas contenedorPersonas;
+public class requestAndParse: MonoBehaviour
+{
+    string resutado ="";
+    public ContenedorPersonas contenedorPersonas;
 
-public UnityEvent evento;
+    public UnityEvent evento;
 
-[SerializeField]
-string pais = "";
-async void Start(){
-    await GetRequest();
-    // Debug.Log("De regreso al metodo start");
-    // Debug.Log("Resultado: "+ resutado);
-}
+    [SerializeField]
+    string pais = "";
+    async void Start()
+    {
+        if (pais != null)
+        {
+            await GetRequest();
+        }
+        // Debug.Log("De regreso al metodo start");
+        // Debug.Log("Resultado: "+ resutado);
+    }
+    public void GetCountry(string country)
+    {
+        Debug.Log(country);
+        pais = country;
+        
+    }
 
 async Task GetRequest(){
      string Url = "http://universities.hipolabs.com/search?country=" + pais;
@@ -46,6 +57,10 @@ async Task GetRequest(){
                 {
                     var jsObject = jsArray[i];
                     Debug.Log(jsObject["name"]);
+                    Persona uni = ScriptableObject.CreateInstance<Persona>();
+                    uni.nombre = jsObject["name"];
+                    AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre + ".asset");
+                    contenedorPersonas.personas.Add(uni);
                 }
 
             // Debug.Log("Raiz: "+ root);

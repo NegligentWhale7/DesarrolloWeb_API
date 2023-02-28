@@ -13,32 +13,42 @@ public class requestAndParse: MonoBehaviour
     public ContenedorPersonas contenedorPersonas;
 
     public UnityEvent evento;
-
-    [SerializeField]
-    string pais = "";
-    async void Start()
+    UnityWebRequestAsyncOperation operation;
+    [SerializeField] string pais = "";
+    [SerializeField] int numberOfUniversities;
+    public bool hasEnteredCountry = false;
+    private void Awake()
     {
-        if (pais != null)
-        {
-            await GetRequest();
-        }
+        contenedorPersonas.personas.Clear();
+    }
+    void Start()
+    {
+        // await GetRequest();
         // Debug.Log("De regreso al metodo start");
         // Debug.Log("Resultado: "+ resutado);
     }
+    
     public void GetCountry(string country)
     {
         Debug.Log(country);
-        pais = country;
-        
+        pais = country;        
+        hasEnteredCountry= true;
+    }
+    public void SetNumberOfUniversities(string num)
+    {
+        numberOfUniversities = int.Parse(num);
+        Debug.Log(num);
+    }
+    public async void IsReady()
+    {
+        await GetRequest();
     }
 
 async Task GetRequest(){
      string Url = "http://universities.hipolabs.com/search?country=" + pais;
 
      using var www = UnityWebRequest.Get(Url);
-
-     var operation = www.SendWebRequest();
-
+            operation = www.SendWebRequest();
      while(!operation.isDone)
         await Task.Yield();
 
@@ -53,13 +63,13 @@ async Task GetRequest(){
                 //Debug.Log(jsArray.ToString());
                 //var jsObject = jsArray[0];
              //Debug.Log(jsObject["name"]);
-                for(int i = 0; i < jsArray.Count; i++)
+                for(int i = 0; i < numberOfUniversities; i++)
                 {
                     var jsObject = jsArray[i];
                     Debug.Log(jsObject["name"]);
                     Persona uni = ScriptableObject.CreateInstance<Persona>();
                     uni.nombre = jsObject["name"];
-                    AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre + ".asset");
+                    AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre.Split('"')[0] + ".asset");
                     contenedorPersonas.personas.Add(uni);
                 }
 

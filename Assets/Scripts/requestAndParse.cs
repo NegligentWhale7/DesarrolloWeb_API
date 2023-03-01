@@ -17,6 +17,8 @@ public class requestAndParse: MonoBehaviour
     [SerializeField] string pais = "";
     [SerializeField] int numberOfUniversities;
     public bool hasEnteredCountry = false;
+
+    Persona uni;
     private void Awake()
     {
         contenedorPersonas.personas.Clear();
@@ -43,7 +45,16 @@ public class requestAndParse: MonoBehaviour
     {
         await GetRequest();
     }
-
+    public void ClearUniversitiesContainer()
+    {
+        contenedorPersonas.personas.Clear();
+        string[] personaFolder = { "Assets/Personas" };
+        foreach (var asset in AssetDatabase.FindAssets("", personaFolder))
+        {
+            var path = AssetDatabase.GUIDToAssetPath(asset);
+            AssetDatabase.DeleteAsset(path);
+        }
+    }
 async Task GetRequest(){
      string Url = "http://universities.hipolabs.com/search?country=" + pais;
 
@@ -67,7 +78,7 @@ async Task GetRequest(){
                 {
                     var jsObject = jsArray[i];
                     Debug.Log(jsObject["name"]);
-                    Persona uni = ScriptableObject.CreateInstance<Persona>();
+                    uni = ScriptableObject.CreateInstance<Persona>();
                     uni.nombre = jsObject["name"];
                     AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre.Split('"')[0] + ".asset");
                     contenedorPersonas.personas.Add(uni);

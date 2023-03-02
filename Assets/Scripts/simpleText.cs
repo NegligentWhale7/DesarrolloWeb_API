@@ -18,6 +18,11 @@ public class simpleText : MonoBehaviour
     }
     texto.text=personasText;
   }
+    public void ClearText()
+    {
+        string personasText = "";
+        texto.text=personasText;
+    }
     public void HidePanel(GameObject panel)
     {
         panel.SetActive(false);

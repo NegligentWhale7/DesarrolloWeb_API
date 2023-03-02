@@ -48,12 +48,12 @@ public class requestAndParse: MonoBehaviour
     public void ClearUniversitiesContainer()
     {
         contenedorPersonas.personas.Clear();
-        string[] personaFolder = { "Assets/Personas" };
+        /*string[] personaFolder = { "Assets/Personas" };
         foreach (var asset in AssetDatabase.FindAssets("", personaFolder))
         {
             var path = AssetDatabase.GUIDToAssetPath(asset);
             AssetDatabase.DeleteAsset(path);
-        }
+        }*/
     }
 async Task GetRequest(){
      string Url = "http://universities.hipolabs.com/search?country=" + pais;
@@ -80,7 +80,7 @@ async Task GetRequest(){
                     Debug.Log(jsObject["name"]);
                     uni = ScriptableObject.CreateInstance<Persona>();
                     uni.nombre = jsObject["name"];
-                    AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre.Split('"')[0] + ".asset");
+                    //AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre.Split('"')[0] + ".asset");
                     contenedorPersonas.personas.Add(uni);
                 }
 

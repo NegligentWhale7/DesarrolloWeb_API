@@ -2,20 +2,20 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Threading.Tasks;
 using System;
-
 using SimpleJSON;
-
-using UnityEditor;
 using UnityEngine.Events;
+using UnityEngine.UI;
+
 public class requestAndParse: MonoBehaviour
 {
     string resutado ="";
     public ContenedorPersonas contenedorPersonas;
 
     public UnityEvent evento;
-    UnityWebRequestAsyncOperation operation;
+    UnityWebRequestAsyncOperation operation, imageOP;
     [SerializeField] string pais = "";
     [SerializeField] int numberOfUniversities;
+    [SerializeField] RawImage countryFlag;
     public bool hasEnteredCountry = false;
 
     Persona uni;
@@ -44,6 +44,7 @@ public class requestAndParse: MonoBehaviour
     public async void IsReady()
     {
         await GetRequest();
+        await GetCountryFlag();
     }
     public void ClearUniversitiesContainer()
     {
@@ -55,25 +56,23 @@ public class requestAndParse: MonoBehaviour
             AssetDatabase.DeleteAsset(path);
         }*/
     }
-async Task GetRequest(){
-     string Url = "http://universities.hipolabs.com/search?country=" + pais;
+    async Task GetRequest()
+    {
+        string Url = "http://universities.hipolabs.com/search?country=" + pais;
 
-     using var www = UnityWebRequest.Get(Url);
-            operation = www.SendWebRequest();
-     while(!operation.isDone)
+        using var www = UnityWebRequest.Get(Url);
+        operation = www.SendWebRequest();
+        while(!operation.isDone)
         await Task.Yield();
 
-    if(www.result== UnityWebRequest.Result.Success)
-    {
-        Debug.Log($"Success: {www.downloadHandler.text}");
-        resutado =www.downloadHandler.text; 
-        try
+        if(www.result== UnityWebRequest.Result.Success)
         {
+            Debug.Log($"Success: {www.downloadHandler.text}");
+            resutado =www.downloadHandler.text; 
+            try
+            {
                 JSONNode root = JSONNode.Parse(resutado);
                 JSONArray jsArray = root.AsArray;
-                //Debug.Log(jsArray.ToString());
-                //var jsObject = jsArray[0];
-             //Debug.Log(jsObject["name"]);
                 for(int i = 0; i < numberOfUniversities; i++)
                 {
                     var jsObject = jsArray[i];
@@ -83,32 +82,33 @@ async Task GetRequest(){
                     //AssetDatabase.CreateAsset(uni, "Assets/Personas/" + uni.nombre.Split('"')[0] + ".asset");
                     contenedorPersonas.personas.Add(uni);
                 }
-
-            // Debug.Log("Raiz: "+ root);
-            // Debug.Log(root["results"]);
-            /*foreach (var r in jsObject["results"])
-            {
-                // Debug.Log(r);
-                // Debug.Log(r.Value);
-
-                // Debug.Log(r.Value["name"]); 
-                Debug.Log(r.Value["name"]["first"]);
-                Persona p = ScriptableObject.CreateInstance<Persona>();
-                p.nombre=r.Value["name"]["first"];
-                p.apellido=r.Value["name"]["last"];
-                // Debug.Log(r.Value["name"]); 
-                // Debug.Log(r.Value["name"]["first"]);
-
-
-                AssetDatabase.CreateAsset(p, "Assets/Personas/"+p.nombre+".asset");
-                        contenedorPersonas.personas.Add(p);
-            }*/
                     evento.Invoke();
                      
-        }
-        catch{
-            Debug.Log("Algo salio mal convirtiendo la respuesta en objetos");
+            }
+            catch
+            {
+                Debug.Log("Algo salio mal convirtiendo la respuesta en objetos");
+            }
         }
     }
-}
+
+    private async Task GetCountryFlag()
+    {
+        string imageUrl = "https://countryflagsapi.com/png/" + pais;
+        UnityWebRequest imageWR = UnityWebRequestTexture.GetTexture(imageUrl);
+        imageOP = imageWR.SendWebRequest();
+        while(!imageOP.isDone)
+        {
+            await Task.Yield();
+        }
+        if (imageWR.result == UnityWebRequest.Result.Success)
+        {
+            var texture = DownloadHandlerTexture.GetContent(imageWR);
+            countryFlag.texture = texture;
+        }
+        else
+        {
+            Debug.Log("Error");
+        }
+    }
 }
